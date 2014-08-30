@@ -1,3 +1,8 @@
-The OpenShift `nodejs` cartridge documentation can be found at:
+A node.js server which provides a service for retrieving icons and other metadata associated with domains.
 
-http://openshift.github.io/documentation/oo_cartridge_guide.html#nodejs
+This is designed for use with the [passcards](https://github.com/robertknight/passcards)
+password manager as a service that provides rich icons for domains.
+
+This enables passcards to display prettier icons for items and may
+in future other metadata about a site which a login is associated with.
+
