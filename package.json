@@ -22,5 +22,8 @@
   },
   "devDependencies": {},
   "bundleDependencies": [],
-  "main": "build/server.js"
+  "main": "build/server.js",
+  "scripts" : {
+	  "prepublish": "make all"
+  }
 }
