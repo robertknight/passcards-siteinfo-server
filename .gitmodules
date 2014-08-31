@@ -1,0 +1,6 @@
+[submodule "typings/DefinitelyTyped"]
+	path = typings/DefinitelyTyped
+	url = https://github.com/borisyankov/DefinitelyTyped.git
+[submodule "passcards"]
+	path = passcards
+	url = https://github.com/robertknight/passcards
