@@ -20,10 +20,12 @@
     "express": "~3.4.4",
     "q": "^1.0.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "typescript": "^1.0.1"
+  },
   "bundleDependencies": [],
   "main": "build/server.js",
-  "scripts" : {
-	  "prepublish": "make all"
+  "scripts": {
+    "prepublish": "make all"
   }
 }
