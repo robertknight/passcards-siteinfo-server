@@ -24,7 +24,7 @@
     "typescript": "^1.0.1"
   },
   "bundleDependencies": [],
-  "main": "build/server.js",
+  "main": "server.js",
   "scripts": {
     "prepublish": "make all"
   }
