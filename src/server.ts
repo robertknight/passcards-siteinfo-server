@@ -1,9 +1,13 @@
-/// <reference path="../typings/DefinitelyTyped/express/express.d.ts" />
-/// <reference path="../typings/DefinitelyTyped/q/Q.d.ts" />
+/// <reference path="passcards/typings/DefinitelyTyped/express/express.d.ts" />
+/// <reference path="passcards/typings/DefinitelyTyped/q/Q.d.ts" />
 
-import collectionutil = require('passcards/lib/base/collectionutil');
 import express = require('express');
 import Q = require('q');
+import urlLib = require('url');
+
+import collectionutil = require('passcards/lib/base/collectionutil');
+import site_info = require('passcards/lib/siteinfo/site_info');
+import siteinfo_service = require('passcards/lib/siteinfo/service');
 
 interface LookupResponse {
 	domain: string;
@@ -34,9 +38,38 @@ interface IconStoreEntry {
 
 class IconStore {
 	private cache: collectionutil.OMap<IconStoreEntry>;
+	private lookupService: siteinfo_service.SiteInfoService;
 
 	constructor() {
 		this.cache = {};
+
+		this.lookupService = new siteinfo_service.SiteInfoService(urlFetcher);
+		this.lookupService.updated.listen((url) => {
+			var domain = this.domainForUrl(url);
+			var lookupResult = this.lookupService.lookup(url);
+			
+			console.log('icons updated for %s, total %d', domain, lookupResult.info.icons.length);
+
+			if (!this.cache.hasOwnProperty(domain)) {
+				this.cache[domain] = {
+					icons: [],
+					status: LookupStatus.Processing
+				};
+			}
+
+			var entry = this.cache[domain];
+			entry.icons = lookupResult.info.icons.map((icon) => {
+				return <Icon>{
+					width: icon.width,
+					height: icon.height,
+					url: icon.url
+				};
+			});
+
+			if (lookupResult.state == site_info.QueryState.Ready) {
+				entry.status = LookupStatus.Done;
+			}
+		});
 	}
 
 	query(domain: string) : Q.Promise<IconStoreEntry> {
@@ -48,6 +81,21 @@ class IconStore {
 				status: LookupStatus.NotFound
 			});
 		}
+	}
+
+	lookup(domain: string) {
+		this.lookupService.update(this.urlForDomain(domain));
+	}
+
+	private urlForDomain(domain: string) {
+		return urlLib.format({
+			scheme: 'https',
+			host: domain
+		});
+	}
+
+	private domainForUrl(url: string) {
+		return urlLib.parse(url).host;
 	}
 }
 
@@ -73,6 +121,11 @@ class App {
 					var key = icon.width + 'x' + icon.height;
 					iconList[key] = icon.url;
 				});
+
+				if (entry.status == LookupStatus.NotFound) {
+					console.log('starting lookup for %s', domain);
+					this.iconStore.lookup(domain);
+				}
 
 				var statusString: string;
 				switch (entry.status) {
