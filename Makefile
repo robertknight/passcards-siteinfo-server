@@ -9,3 +9,6 @@ build/src/server.js: $(app_srcs)
 
 clean:
 	rm -rf build
+
+lint:
+	tslint -c passcards/tslint.json -f src/server.ts

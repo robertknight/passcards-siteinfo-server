@@ -106,10 +106,6 @@ class App {
 				res.end();
 			});
 		});
-
-		this.app.get('/icon/:id', (req, res) => {
-
-		});
 	}
 
 	start(port: number, ip: string) {
@@ -125,5 +121,4 @@ export function main() {
 	var port = process.env.OPENSHIFT_NODEJS_PORT || 8060;
 	app.start(port, ipAddress);
 }
-
 
