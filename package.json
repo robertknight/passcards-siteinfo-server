@@ -17,8 +17,11 @@
     "npm": ">= 1.0.0"
   },
   "dependencies": {
+    "URIjs": "^1.13.2",
     "express": "~3.4.4",
-    "q": "^1.0.1"
+    "q": "^1.0.1",
+    "sprintf": "^0.1.4",
+    "underscore": "^1.7.0"
   },
   "devDependencies": {
     "tslint": "^0.4.12",
