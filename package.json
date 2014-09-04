@@ -18,12 +18,15 @@
   },
   "dependencies": {
     "URIjs": "^1.13.2",
+    "argparse": "^0.1.15",
     "express": "~3.4.4",
     "q": "^1.0.1",
     "sprintf": "^0.1.4",
-    "underscore": "^1.7.0"
+    "underscore": "^1.7.0",
+    "xdiff": "^0.2.11"
   },
   "devDependencies": {
+    "qunitjs": "^1.15.0",
     "tslint": "^0.4.12",
     "typescript": "^1.0.1"
   },

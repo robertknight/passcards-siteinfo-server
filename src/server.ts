@@ -2,6 +2,7 @@
 /// <reference path="../passcards/typings/DefinitelyTyped/q/Q.d.ts" />
 
 import express = require('express');
+import http = require('http');
 import Q = require('q');
 import urlLib = require('url');
 
@@ -20,14 +21,14 @@ class NotFoundError extends err_util.BaseError {
 	}
 }
 
-interface LookupResponseIcon {
+export interface LookupResponseIcon {
 	width: number;
 	height: number;
 	sourceUrl: string;
 	dataUrl: string;
 }
 
-interface LookupResponse {
+export interface LookupResponse {
 	domain: string;
 	icons: LookupResponseIcon[];
 	lastModified: number;
@@ -159,9 +160,10 @@ class IconStore {
 	}
 }
 
-class App {
+export class App {
 	private app: express.Express;
 	private iconStore: IconStore;
+	private server: http.Server;
 
 	constructor() {
 		this.app = express();
@@ -256,10 +258,17 @@ class App {
 		});
 	}
 
-	start(port: number, ip: string) {
-		this.app.listen(port, ip, () => {
+	start(port: number, ip: string) : Q.Promise<void> {
+		var ready = Q.defer<void>();
+		this.server = this.app.listen(port, ip, () => {
 			console.log('Server started on %s:%d', ip, port);
+			ready.resolve(null);
 		});
+		return ready.promise;
+	}
+
+	stop() {
+		this.server.close();
 	}
 
 	private dataUrl(sourceUrl: string) {
