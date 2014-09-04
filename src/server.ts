@@ -21,15 +21,15 @@ class NotFoundError extends err_util.BaseError {
 }
 
 interface LookupResponseIcon {
+	width: number;
+	height: number;
 	sourceUrl: string;
 	dataUrl: string;
 }
 
 interface LookupResponse {
 	domain: string;
-	icons: {
-		[dimension: string] : LookupResponseIcon
-	};
+	icons: LookupResponseIcon[];
 	lastModified: number;
 	status: string;
 	submitted: number;
@@ -177,10 +177,10 @@ class App {
 			var domain = req.params.domain;
 			
 			this.iconStore.query(domain).then((entry) => {
-				var iconList: collectionutil.OMap<LookupResponseIcon> = {};
-				entry.icons.forEach((icon) => {
-					var key = icon.width + 'x' + icon.height;
-					iconList[key] = {
+				var iconList: LookupResponseIcon[] = entry.icons.map((icon) => {
+					return {
+						width: icon.width,
+						height: icon.height,
 						sourceUrl: icon.url,
 						dataUrl: this.dataUrl(icon.url)
 					};
