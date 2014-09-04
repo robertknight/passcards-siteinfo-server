@@ -9,6 +9,7 @@ import collectionutil = require('../passcards/lib/base/collectionutil');
 import dateutil = require('../passcards/lib/base/dateutil');
 import err_util = require('../passcards/lib/base/err_util');
 import http_client = require('../passcards/lib/http_client');
+import image = require('../passcards/lib/siteinfo/image');
 import site_info = require('../passcards/lib/siteinfo/site_info');
 import siteinfo_service = require('../passcards/lib/siteinfo/service');
 import stringutil = require('../passcards/lib/base/stringutil');
@@ -233,8 +234,11 @@ class App {
 
 			this.iconStore.fetchData(srcUrl).then((data) => {
 				var parsedSrcUrl = urlLib.parse(srcUrl);
+				var imageInfo = image.getInfo(data);
+				var mimeType = image.mimeType(imageInfo.type);
 
-				res.set('Content-Disposition', 'filename:' + stringutil.suffix(parsedSrcUrl.path, '/'));
+				res.set('Content-Disposition', 'filename=' + stringutil.suffix(parsedSrcUrl.path, '/'));
+				res.set('Content-Type', mimeType);
 
 				res.status(200);
 				res.send(new Buffer(<any>data));
