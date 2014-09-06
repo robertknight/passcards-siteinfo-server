@@ -6,6 +6,7 @@ import http = require('http');
 import Q = require('q');
 import urlLib = require('url');
 
+import client_api = require('../passcards/lib/siteinfo/client_api');
 import collectionutil = require('../passcards/lib/base/collectionutil');
 import dateutil = require('../passcards/lib/base/dateutil');
 import err_util = require('../passcards/lib/base/err_util');
@@ -19,21 +20,6 @@ class NotFoundError extends err_util.BaseError {
 	constructor() {
 		super('Item not found');
 	}
-}
-
-export interface LookupResponseIcon {
-	width: number;
-	height: number;
-	sourceUrl: string;
-	dataUrl: string;
-}
-
-export interface LookupResponse {
-	domain: string;
-	icons: LookupResponseIcon[];
-	lastModified: number;
-	status: string;
-	submitted: number;
 }
 
 enum LookupStatus {
@@ -191,7 +177,7 @@ export class App {
 			var domain = req.params.domain;
 			
 			this.iconStore.query(domain).then((entry) => {
-				var iconList: LookupResponseIcon[] = entry.icons.map((icon) => {
+				var iconList: client_api.LookupResponseIcon[] = entry.icons.map((icon) => {
 					return {
 						width: icon.width,
 						height: icon.height,
@@ -217,7 +203,7 @@ export class App {
 						break;
 				}
 
-				var body: LookupResponse = {
+				var body: client_api.LookupResponse = {
 					domain: domain,
 					icons: iconList,
 					lastModified: dateutil.unixTimestampFromDate(entry.lastModified),

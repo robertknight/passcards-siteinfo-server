@@ -6,6 +6,7 @@ import underscore = require('underscore');
 import urlLib = require('url');
 
 import asyncutil = require('../passcards/lib/base/asyncutil');
+import client_api = require('../passcards/lib/siteinfo/client_api');
 import http_client = require('../passcards/lib/http_client');
 import node_vfs = require('../passcards/lib/vfs/node');
 import http_vfs = require('../passcards/lib/vfs/http');
@@ -36,7 +37,7 @@ testLib.addAsyncTest('fetch site info', (assert) => {
 	});
 	var appPort = testPort();
 	var baseUrl = 'http://localhost:' + appPort;
-	var response: server.LookupResponse;
+	var response: client_api.LookupResponse;
 
 	var fileServer: http_vfs.Server;
 	var fileServerPort = testPort();
