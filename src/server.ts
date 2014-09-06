@@ -55,6 +55,14 @@ interface IconStoreEntry {
 	lastModified: Date;
 }
 
+export interface IconStoreOptions {
+	/** Specifies whether icons are fetched via HTTPS by
+	  * default. Icon links that explicitly specify 'http'
+	  * are still fetched without SSL.
+	  */
+	secureFetch: boolean;
+}
+
 class HttpUrlFetcher {
 	fetch(url: string) : Q.Promise<siteinfo_service.UrlResponse> {
 		return http_client.get(url, {redirectLimit: 5}).then((reply) => {
@@ -70,12 +78,16 @@ class IconStore {
 	private metadataCache: collectionutil.OMap<IconStoreEntry>;
 	private dataCache: collectionutil.OMap<Uint8Array>;
 	private lookupService: siteinfo_service.SiteInfoService;
+	private opts: IconStoreOptions
 
-	constructor() {
+	constructor(opts?: IconStoreOptions) {
 		var urlFetcher = new HttpUrlFetcher();
 
 		this.dataCache = {};
 		this.metadataCache = {};
+		this.opts = opts || {
+			secureFetch: true
+		};
 
 		this.lookupService = new siteinfo_service.SiteInfoService(urlFetcher);
 		this.lookupService.updated.listen((url) => {
@@ -136,7 +148,7 @@ class IconStore {
 
 	private urlForDomain(domain: string) {
 		return urlLib.format({
-			protocol: 'https',
+			protocol: this.opts.secureFetch ? 'https' : 'http',
 			host: domain,
 			path: '/'
 		});
@@ -165,9 +177,9 @@ export class App {
 	private iconStore: IconStore;
 	private server: http.Server;
 
-	constructor() {
+	constructor(opts?: IconStoreOptions) {
 		this.app = express();
-		this.iconStore = new IconStore();
+		this.iconStore = new IconStore(opts);
 
 		var corsHandler: express.Handler = (req, res, next) => {
 			res.set('Access-Control-Allow-Origin', '*');

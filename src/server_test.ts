@@ -29,7 +29,11 @@ function startFileServer(path: string, port: number) : Q.Promise<http_vfs.Server
 }
 
 testLib.addAsyncTest('fetch site info', (assert) => {
-	var app = new server.App();
+	var app = new server.App({
+		// use plain HTTP when fetching icons from our test
+		// server. By default SSL is used
+		secureFetch: false
+	});
 	var appPort = testPort();
 	var baseUrl = 'http://localhost:' + appPort;
 	var response: server.LookupResponse;
@@ -55,8 +59,8 @@ testLib.addAsyncTest('fetch site info', (assert) => {
 			});
 		});
 	}).then(() => {
-		var smallIconUrl = 'https://' + testDomain + '/favicon.ico';
-		var largeIconUrl = 'https://' + testDomain + '/apple-touch-icon.png';
+		var smallIconUrl = 'http://' + testDomain + '/favicon.ico';
+		var largeIconUrl = 'http://' + testDomain + '/apple-touch-icon.png';
 
 		var iconDataUrl = (url: string) => {
 			return urlLib.format({
