@@ -61,16 +61,16 @@ class HttpUrlFetcher {
 }
 
 class IconStore {
-	private metadataCache: collectionutil.OMap<IconStoreEntry>;
-	private dataCache: collectionutil.OMap<Uint8Array>;
+	private metadataCache: Map<string,IconStoreEntry>;
+	private dataCache: Map<string,Uint8Array>;
 	private lookupService: siteinfo_service.SiteInfoService;
 	private opts: IconStoreOptions
 
 	constructor(opts?: IconStoreOptions) {
 		var urlFetcher = new HttpUrlFetcher();
 
-		this.dataCache = {};
-		this.metadataCache = {};
+		this.dataCache = new collectionutil.PMap<string,Uint8Array>();
+		this.metadataCache = new collectionutil.PMap<string,IconStoreEntry>();
 		this.opts = opts || {
 			secureFetch: true
 		};
@@ -83,7 +83,7 @@ class IconStore {
 			this.initCacheEntry(domain);
 			
 			console.log('icons updated for %s, total %d', domain, lookupResult.info.icons.length);
-			var entry = this.metadataCache[domain];
+			var entry = this.metadataCache.get(domain);
 			entry.icons = lookupResult.info.icons.map((icon) => {
 				return <Icon>{
 					width: icon.width,
@@ -95,7 +95,7 @@ class IconStore {
 
 			lookupResult.info.icons.forEach((icon) => {
 				if (icon.data) {
-					this.dataCache[icon.url] = icon.data;
+					this.dataCache.set(icon.url, icon.data);
 				}
 			});
 
@@ -106,8 +106,8 @@ class IconStore {
 	}
 
 	query(domain: string) : Q.Promise<IconStoreEntry> {
-		if (this.metadataCache.hasOwnProperty(domain)) {
-			return Q(this.metadataCache[domain]);
+		if (this.metadataCache.has(domain)) {
+			return Q(this.metadataCache.get(domain));
 		} else {
 			return Q(<IconStoreEntry>{
 				icons: [],
@@ -121,12 +121,12 @@ class IconStore {
 		this.lookupService.lookup(url);
 		
 		this.initCacheEntry(domain);
-		return this.metadataCache[domain];
+		return this.metadataCache.get(domain);
 	}
 
 	fetchData(srcUrl: string) : Q.Promise<Uint8Array> {
-		if (this.dataCache.hasOwnProperty(srcUrl)) {
-			return Q(this.dataCache[srcUrl]);
+		if (this.dataCache.has(srcUrl)) {
+			return Q(this.dataCache.get(srcUrl));
 		} else {
 			return Q.reject(new NotFoundError());
 		}
@@ -145,16 +145,16 @@ class IconStore {
 	}
 
 	private initCacheEntry(domain: string) {
-		if (this.metadataCache.hasOwnProperty(domain)) {
+		if (this.metadataCache.get(domain)) {
 			return;
 		}
 
-		this.metadataCache[domain] = {
+		this.metadataCache.set(domain, {
 			icons: [],
 			status: LookupStatus.Processing,
 			submitted: new Date(),
 			lastModified: new Date()
-		};
+		});
 	}
 }
 
