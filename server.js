@@ -5,8 +5,9 @@
 //
 // Use the certificates from /etc/ssl/certs instead
 //
-var crypto_cacerts = require('crypto-cacerts');
-crypto_cacerts.cryptoPatch('/etc/ssl/certs');
+var custom_ssl_certs = require('./build/src/custom_ssl_certs');
+var certList = custom_ssl_certs.readCertDir('/etc/ssl/certs');
+custom_ssl_certs.cryptoPatch(certList);
 
 var server = require('./build/src/server');
 server.main();
