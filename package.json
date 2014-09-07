@@ -19,6 +19,7 @@
   "dependencies": {
     "URIjs": "^1.13.2",
     "argparse": "^0.1.15",
+    "crypto-cacerts": "^0.1.0",
     "express": "~3.4.4",
     "q": "^1.0.1",
     "sprintf": "^0.1.4",
