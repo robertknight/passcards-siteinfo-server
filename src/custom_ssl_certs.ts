@@ -15,7 +15,7 @@ import path = require('path');
   */
 export function parsePEMFile(filename: string) : string[] {
 	var certBundle = fs.readFileSync(filename, {encoding: 'utf8'});
-	return certBundle.match(/-+BEGIN CERTIFICATE[^]*?END CERTIFICATE-+/g);
+	return certBundle.match(/-+BEGIN CERTIFICATE[^]*?END CERTIFICATE-+/g) || [];
 }
 
 /** Read all of the certificate bundles in a given directory
