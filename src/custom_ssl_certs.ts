@@ -36,7 +36,7 @@ export function readCertDir(dirPath: string) : string[] {
 		} catch (err) {
 			// on OpenShift, the system cert dir contains
 			// several cert bundles which are only readable by root
-			if (!err.code || err.code != 'EACCESS') {
+			if (!err.code || err.code != 'EACCES') {
 				throw err;
 			}
 		}
