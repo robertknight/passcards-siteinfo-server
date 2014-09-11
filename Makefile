@@ -1,6 +1,8 @@
 include passcards/common.mk
 
-TSC=tsc -m commonjs --noImplicitAny --sourcemap
+NODE_BIN_DIR=node_modules/.bin
+
+TSC=$(NODE_BIN_DIR)/tsc -m commonjs --noImplicitAny --sourcemap
 
 app_srcs=$(shell find src/ -name '*.ts')
 compiled_srcs=$(patsubst %.ts, build/%.js, $(app_srcs))

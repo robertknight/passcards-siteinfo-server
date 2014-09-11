@@ -1,8 +1,11 @@
 /// <reference path="../passcards/typings/DefinitelyTyped/express/express.d.ts" />
+/// <reference path="../passcards/typings/DefinitelyTyped/node/node.d.ts" />
 /// <reference path="../passcards/typings/DefinitelyTyped/q/Q.d.ts" />
 
 import express = require('express');
+import fs = require('fs');
 import http = require('http');
+import path = require('path');
 import Q = require('q');
 import urlLib = require('url');
 
@@ -45,8 +48,17 @@ export interface IconStoreOptions {
 	/** Specifies whether icons are fetched via HTTPS by
 	  * default. Icon links that explicitly specify 'http'
 	  * are still fetched without SSL.
+	  *
+	  * If not specified, secureFetch defaults to true.
+	  * Ideally, icons could always be fetched via SSL. However,
+	  * there are many popular sites whose homepages have invalid
+	  * SSL configurations (eg. SSL certs only valid for the CDN
+	  * serving the homepage content).
 	  */
-	secureFetch: boolean;
+	secureFetch?: boolean;
+}
+
+export interface AppConfig extends IconStoreOptions {
 }
 
 class HttpUrlFetcher {
@@ -163,7 +175,7 @@ export class App {
 	private iconStore: IconStore;
 	private server: http.Server;
 
-	constructor(opts?: IconStoreOptions) {
+	constructor(opts?: AppConfig) {
 		this.app = express();
 		this.iconStore = new IconStore(opts);
 
@@ -279,8 +291,26 @@ export class App {
 	}
 }
 
+function logConfig(config: AppConfig) {
+	var configMessages = {
+		'Config: Using SSL for connections to external hosts': !!config.secureFetch
+	};
+	for (var key in configMessages) {
+		console.log('%s:', key, (<any>configMessages)[key]);
+	}
+}
+
 export function main() {
-	var app = new App();
+	var config: AppConfig = {}
+	if (process.env.OPENSHIFT_DATA_DIR) {
+		var configPath = path.join(process.env.OPENSHIFT_DATA_DIR, 'config.json');
+		config = JSON.parse(fs.readFileSync(configPath).toString());
+		
+		console.log('Read configuration from %s', configPath);
+		logConfig(config);
+	}
+
+	var app = new App(config);
 	var ipAddress = process.env.OPENSHIFT_NODEJS_IP;
 	var port = process.env.OPENSHIFT_NODEJS_PORT || 8060;
 	app.start(port, ipAddress);
