@@ -112,28 +112,51 @@ class IconStore {
 			});
 
 			if (lookupResult.state == site_info.QueryState.Ready) {
+				console.log('icon lookup for %s completed in %d ms', domain, entry.lastModified.getTime() -
+				  entry.submitted.getTime());
 				entry.status = LookupStatus.Done;
 			}
 		});
 	}
 
-	query(domain: string) : Q.Promise<IconStoreEntry> {
+	query(domain: string, timeout?: number) : Q.Promise<IconStoreEntry> {
 		if (this.metadataCache.has(domain)) {
 			return Q(this.metadataCache.get(domain));
 		} else {
-			return Q(<IconStoreEntry>{
-				icons: [],
-				status: LookupStatus.NotFound
-			});
+			return this.lookup(domain, timeout);
 		}
 	}
 
-	lookup(domain: string) : IconStoreEntry {
+	private lookup(domain: string, timeout?: number) : Q.Promise<IconStoreEntry> {
+		console.log('starting lookup for %s (timeout: %d)', domain, timeout);
 		var url = this.urlForDomain(domain);
 		this.lookupService.lookup(url);
-		
+
 		this.initCacheEntry(domain);
-		return this.metadataCache.get(domain);
+		var cacheEntry = this.metadataCache.get(domain);
+
+		if (cacheEntry.status != LookupStatus.Processing || !timeout) {
+			return Q(cacheEntry);
+		}
+
+		var entry = Q.defer<IconStoreEntry>();
+		var lookupUrl = this.urlForDomain(domain);
+		var updateHandler = this.lookupService.updated.listen((url) => {
+			if (url == lookupUrl) {
+				cacheEntry = this.metadataCache.get(domain);
+				if (cacheEntry.status != LookupStatus.Processing) {
+					this.lookupService.updated.ignore(updateHandler);
+					entry.resolve(cacheEntry);
+				}
+			}
+		});
+
+		setTimeout(() => {
+			this.lookupService.updated.ignore(updateHandler);
+			entry.resolve(cacheEntry);
+		}, timeout);
+
+		return entry.promise;
 	}
 
 	fetchData(srcUrl: string) : Q.Promise<Uint8Array> {
@@ -187,8 +210,9 @@ export class App {
 
 		this.app.get('/siteinfo/:domain', (req, res) => {
 			var domain = req.params.domain;
+			var timeout = parseInt(req.param('timeout'));
 			
-			this.iconStore.query(domain).then((entry) => {
+			this.iconStore.query(domain, timeout).then((entry) => {
 				var iconList: client_api.LookupResponseIcon[] = entry.icons.map((icon) => {
 					return {
 						width: icon.width,
@@ -197,11 +221,6 @@ export class App {
 						dataUrl: this.dataUrl(icon.url)
 					};
 				});
-
-				if (entry.status == LookupStatus.NotFound) {
-					console.log('starting lookup for %s', domain);
-					entry = this.iconStore.lookup(domain);
-				}
 
 				var statusString: string;
 				switch (entry.status) {
