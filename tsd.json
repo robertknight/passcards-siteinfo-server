@@ -1,0 +1,21 @@
+{
+  "version": "v4",
+  "repo": "borisyankov/DefinitelyTyped",
+  "ref": "master",
+  "path": "passcards/typings/DefinitelyTyped",
+  "bundle": "typings/tsd.d.ts",
+  "installed": {
+    "express/express.d.ts": {
+      "commit": "bd9a1922e44ddf35953587a92c5caf4242bf6ea5"
+    },
+    "node/node.d.ts": {
+      "commit": "bd9a1922e44ddf35953587a92c5caf4242bf6ea5"
+    },
+    "q/Q.d.ts": {
+      "commit": "bd9a1922e44ddf35953587a92c5caf4242bf6ea5"
+    },
+    "jquery/jquery.d.ts": {
+      "commit": "bd9a1922e44ddf35953587a92c5caf4242bf6ea5"
+    }
+  }
+}
