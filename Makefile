@@ -1,6 +1,6 @@
 include passcards/common.mk
 
-NODE_BIN_DIR=node_modules/.bin
+NODE_BIN_DIR=$(PWD)/node_modules/.bin
 
 TSC=$(NODE_BIN_DIR)/tsc -m commonjs --noImplicitAny --sourcemap
 
@@ -10,7 +10,13 @@ test_files=$(shell find build/ -name '*_test.js')
 
 all: $(compiled_srcs)
 
-$(compiled_srcs): $(app_srcs)
+build/typings: tsd.json passcards/tsd.json
+	$(TSD) reinstall
+	cd passcards && $(TSD) reinstall
+	@mkdir -p build
+	@touch build/typings
+
+$(compiled_srcs): build/typings $(app_srcs)
 	$(TSC) --outDir build $(app_srcs)
 
 clean:

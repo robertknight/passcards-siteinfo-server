@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "qunitjs": "^1.15.0",
+    "tsd": "^0.5.7",
     "tslint": "^0.4.14",
     "typescript": "^1.1.0-1"
   },
