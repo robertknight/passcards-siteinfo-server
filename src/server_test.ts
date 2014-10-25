@@ -29,7 +29,7 @@ function startFileServer(path: string, port: number) : Q.Promise<http_vfs.Server
 	});
 }
 
-testLib.addAsyncTest('fetch site info', (assert) => {
+function testFetchSiteInfo(assert: testLib.Assert, timeout: number) {
 	var app = new server.App({
 		// use plain HTTP when fetching icons from our test
 		// server. By default SSL is used
@@ -47,18 +47,24 @@ testLib.addAsyncTest('fetch site info', (assert) => {
 		fileServer = server;
 		return app.start(appPort, undefined)
 	}).then(() => {
-		return http_client.get(baseUrl + '/siteinfo/' + testDomain);
+		return http_client.get(baseUrl + '/siteinfo/' + testDomain + '?timeout=' + timeout);
 	}).then((reply) => {
 		response = JSON.parse(reply.body);
 		assert.equal(response.domain, testDomain);
-		assert.deepEqual(response.icons, []);
-		assert.equal(response.status, 'processing');
-		return asyncutil.until(() => {
-			return http_client.get(baseUrl + '/siteinfo/' + testDomain).then((reply) => {
-				response = JSON.parse(reply.body);
-				return response.status == 'done';
+
+		if (timeout > 0) {
+			assert.equal(response.status, 'done');
+			return Q(true);
+		} else {
+			assert.equal(response.status, 'processing');
+			assert.deepEqual(response.icons, []);
+			return asyncutil.until(() => {
+				return http_client.get(baseUrl + '/siteinfo/' + testDomain).then((reply) => {
+					response = JSON.parse(reply.body);
+					return response.status == 'done';
+				});
 			});
-		});
+		}
 	}).then(() => {
 		var smallIconUrl = 'http://' + testDomain + '/favicon.ico';
 		var largeIconUrl = 'http://' + testDomain + '/apple-touch-icon.png';
@@ -91,6 +97,14 @@ testLib.addAsyncTest('fetch site info', (assert) => {
 		fileServer.close();
 		app.stop();
 	});
+}
+
+testLib.addAsyncTest('fetch site info', (assert) => {
+	return testFetchSiteInfo(assert, 0);	
+});
+
+testLib.addAsyncTest('fetch site info with timeout', (assert) => {
+	return testFetchSiteInfo(assert, 2000);
 });
 
 testLib.start();
