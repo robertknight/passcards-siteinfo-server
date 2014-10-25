@@ -27,8 +27,8 @@
   },
   "devDependencies": {
     "qunitjs": "^1.15.0",
-    "tslint": "^0.4.12",
-    "typescript": "^1.0.1"
+    "tslint": "^0.4.14",
+    "typescript": "^1.1.0-1"
   },
   "bundleDependencies": [],
   "main": "server.js",
